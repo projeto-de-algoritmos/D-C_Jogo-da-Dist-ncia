@@ -4,6 +4,9 @@ import random
 import math
 import time
 
+# Ajustando um limite mais alto de possibilidade de recursão
+sys.setrecursionlimit(10**6)
+
 # Inicialização do Pygame
 pygame.init()
 
