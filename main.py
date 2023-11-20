@@ -40,32 +40,37 @@ def dc_closest_pair(points):
     median_index = len(sorted_points) // 2
     median_point = sorted_points[median_index][0]
 
-    left_points = [point for point in points if int(point[0]) <= median_point]
-    right_points = [point for point in points if int(point[0]) > median_point]
+    left_points = [point for point in points if point[0] <= median_point]
+    right_points = [point for point in points if point[0] > median_point]
 
     left_closest_pair = dc_closest_pair(left_points)
     right_closest_pair = dc_closest_pair(right_points)
 
-    if left_closest_pair and right_closest_pair:
-        min_distance = min(calculate_distance(left_closest_pair[0], left_closest_pair[1]),
-                           calculate_distance(right_closest_pair[0], right_closest_pair[1]))
+    return merge_closest_pairs(left_closest_pair, right_closest_pair, median_point)
 
-        strip_points = [point for point in points if abs(int(point[0]) - median_point) < min_distance]
-        strip_closest_pair = closest_pair_strip(strip_points, min_distance)
-
-        if strip_closest_pair and strip_closest_pair[0] and strip_closest_pair[1]:
-            if calculate_distance(strip_closest_pair[0], strip_closest_pair[1]) < min_distance:
-                return strip_closest_pair
-        elif min_distance == calculate_distance(left_closest_pair[0], left_closest_pair[1]):
-            return left_closest_pair
-        else:
-            return right_closest_pair
-    elif left_closest_pair:
-        return left_closest_pair
-    elif right_closest_pair:
+# Função para juntar os pares mais próximos e verificar a faixa da mediana
+def merge_closest_pairs(left_closest_pair, right_closest_pair, median_point):
+    if left_closest_pair is None:
         return right_closest_pair
-    else:
-        return None
+    elif right_closest_pair is None:
+        return left_closest_pair
+
+    left_distance = calculate_distance(left_closest_pair[0], left_closest_pair[1])
+    right_distance = calculate_distance(right_closest_pair[0], right_closest_pair[1])
+
+    min_distance = min(left_distance, right_distance)
+
+    # Verifique se há um par mais próximo que atravessa a linha de divisão
+    strip_points = [point for point in points if abs(point[0] - median_point) < min_distance]
+    strip_closest_pair = closest_pair_strip(strip_points, min_distance)
+
+    if strip_closest_pair is not None:
+        strip_distance = calculate_distance(strip_closest_pair[0], strip_closest_pair[1])
+        if strip_distance < min_distance:
+            return strip_closest_pair
+
+    # Retorne o par mais próximo entre os subconjuntos esquerdo e direito
+    return left_closest_pair if left_distance < right_distance else right_closest_pair
 
 # Encontrar o par de pontos mais próximo usando o algoritmo de força bruta
 def brute_force_closest_pair(points):
@@ -106,12 +111,12 @@ while running:
 
             mouse_pos = pygame.mouse.get_pos()
             clicked_point = min(points, key=lambda p: calculate_distance(p, mouse_pos))
-            
+
             # Encontrar o par de pontos mais próximo
             closest_pair_result = dc_closest_pair(points)
             # print(f"Clicked point: {clicked_point}")
             # print(f"Closest pair result: {closest_pair_result}")
-            
+
             # Modifique a condição abaixo
             if clicked_point in closest_pair_result:
                 game_over = True
